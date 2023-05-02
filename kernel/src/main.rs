@@ -2,23 +2,28 @@
 #![no_main]
 use core::panic::PanicInfo;
 
-/// This function is called on panic.
+use bootloader_api::info::FrameBufferInfo;
+use kernel::FrameBuffer;
+
+static mut FB_ADDR: usize = 0;
+static mut FB_INFO: Option<FrameBufferInfo> = None;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
+    // todo
     loop {}
 }
 
 
-static HELLO: &[u8] = b"Hello World!";
 fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
-    let vga_buffer = 0xb8000 as *mut u8;
-
-    for (i, &byte) in HELLO.iter().enumerate() {
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0x0b; // cyan
-        }
-    }
+    let fbinfo = boot_info.framebuffer.as_ref().unwrap().info();
+    let fb = boot_info.framebuffer.as_ref().unwrap().buffer().as_ptr();
+    let fb: *mut u8 = unsafe {core::mem::transmute(fb)};
+    unsafe {FB_ADDR = fb as usize};
+    unsafe {FB_INFO = Some(fbinfo.clone())};
+    let fb = FrameBuffer{data: fb, info: fbinfo};
+    fb.clear();
+    fb.put(10, 20, 0, 255, 128);
+    fb.rectangle(100, 200, 150, 300, 0, 255, 128);
 
     loop {}
 }
