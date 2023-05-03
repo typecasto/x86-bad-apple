@@ -69,11 +69,11 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
         altstatus_devicectl.write(1 << 1); // Disable interrupts, we can't handle them at all
     }
     // which byte of a packet we're reading, 0 to 4 inclusive.
-    let mut which = 0;
+    let mut index = 0;
     // packets are: [YH, YL, XH, XL, DATA]
-    let mut packet: (u8, u8, u8, u8, u8) = (0, 0, 0, 0, 0);
+    let mut packet: [u8; 5] = [0; 5];
     // bytes left in the buffer
-    let mut bytes_in_buffer = 0;
+    let mut buffer_pos = 0;
     // Buffer type, essentially an untagged union
     // One underlying 512-byte buffer, two logical variables that share the same data
     union Buffer {
@@ -83,34 +83,55 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     let mut buffer: Buffer = unsafe { Buffer { byte: [0; 512] } };
     // LBA to read next
     let mut lba = 1u64;
+    fb.clear();
     loop {
         unsafe {
-            fb.show_u8_offset(status_commands.read(), 0);
-            fb.show_u8_offset(errors_features.read(), 20);
+            // fb.show_u8_offset(status_commands.read(), 0);
+            // fb.show_u8_offset(errors_features.read(), 20);
             sector_count.write(1); // not fast enough to read multiple sectors lol, who cares
             sector_number.write(lba as u8); // low byte
             cyl_low.write((lba >> 8) as u8); // middle byte
             cyl_high.write((lba >> 16) as u8); // high byte
+            lba += 1;
+            fb.show_u8_offset(lba as u8, 40);
             status_commands.write(0x20); // send the READ_SECTORS command
-            fb.show_u8_offset(status_commands.read(), 0);
-            fb.show_u8_offset(errors_features.read(), 20);
+            // fb.show_u8_offset(status_commands.read(), 0);
+            // fb.show_u8_offset(errors_features.read(), 20);
 
-            fb.clear();
-            for _ in 0..5 {
-                fb.rectangle(0, 0, fb.info.width, fb.info.height-40, 255, 0, 128);
-                fb.rectangle(0, 0, fb.info.width, fb.info.height-40, 128, 0, 128);
-                fb.show_u8_offset(status_commands.read(), 0);
-                fb.show_u8_offset(errors_features.read(), 20);
+            // fb.clear();
+            let mut polled = false;
+            while polled == false {
+                //fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 255, 0, 128);
+                //fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 0, 128);
+                let status = status_commands.read();
+                // fb.show_u8_offset(status, 0);
+                if status & 0x80 == 0 && status & 0x08 == 0x08 {
+                    // BSY = 0, and DRQ = 1
+                    polled = true;
+                }
+                // fb.show_u8_offset(errors_features.read(), 20);
             }
-            
-            for b in 0..8 {
-                let data: u16 = data_io.read();
-                fb.show_u8_offset(data as u8, 60 + (b * 50)); // low byte
-                fb.show_u8_offset((data>>8) as u8, 80 + (b * 50)); // high byte
+            // we're ready to read a sector into the buffer
+            for i in 0..=0xFF {
+                buffer.dbyte[i] = data_io.read();
             }
-            let data: u16 = data_io.read();
-            // fb.show_u8(data as u8);
-            loop {}
+            buffer_pos = 0;
+            // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 0, 128);
+            for i in 0..=0x1FF {
+                // fb.show_u8(i as u8);
+                packet[index] = buffer.byte[i];
+                index = index + 1;
+                if index == 5 {
+                    // index points off the end of the packet, meaning we've filled it, time to roll
+                    let y = packet[1] as usize | ((packet[0] as usize) << 8);
+                    let x = packet[3] as usize | ((packet[2] as usize) << 8);
+                    let d = packet[4];
+                    fb.put(x, y, d, d, d);
+                    index = 0;
+                }
+            }
+            // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 40, 128);
+            // loop {}
         }
     }
 

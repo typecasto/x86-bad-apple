@@ -37,11 +37,11 @@ fn main() {
                 // codes.extend((x as u16).to_le_bytes());
                 // codes.extend((y as u16).to_le_bytes());
                 // codes.push(this.clone());
-                codes.push(1);
-                codes.push(2);
-                codes.push(3);
-                codes.push(4);
-                codes.push(5);
+                codes.push((y>>8) as u8);
+                codes.push(y as u8);
+                codes.push((x>>8) as u8);
+                codes.push(x as u8);
+                codes.push(this.clone());
                 diffs += 1;
                 difft += 1;
 
