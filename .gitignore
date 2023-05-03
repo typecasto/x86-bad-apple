@@ -18,3 +18,5 @@ Cargo.lock
 
 /target
 frames
+bad_apple.bin
+bad_apple_encoder/bad_apple.bin

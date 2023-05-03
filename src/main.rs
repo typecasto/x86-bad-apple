@@ -13,6 +13,7 @@ fn main() {
     } else {
         cmd.arg("-drive").arg(format!("format=raw,file={bios_path}"));
     }
+    cmd.arg("-drive").arg(format!("format=raw,file=bad_apple.bin"));
     let mut child = cmd.spawn().unwrap();
     child.wait().unwrap();
 }

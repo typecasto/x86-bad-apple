@@ -68,11 +68,12 @@ impl FrameBuffer {
         drawfn: impl Fn(usize, usize) -> (u8, u8, u8),
     ) {
         debug_assert!(
-            x1 < self.info.width &&
-            x2 < self.info.width &&
-            y1 < self.info.height &&
-            y2 < self.info.height &&
-            x1 <= x2 && y1 < y2
+            x1 < self.info.width
+                && x2 < self.info.width
+                && y1 < self.info.height
+                && y2 < self.info.height
+                && x1 <= x2
+                && y1 < y2
         );
         for y in y1..y2 {
             for x in x1..x2 {
@@ -81,15 +82,55 @@ impl FrameBuffer {
             }
         }
     }
+    // Shows a u8 at a set height offset, can be used to display multiple u8s at once.
+    // The pinnacle of technology, I know.
+    // 20 is one row.
+    pub fn show_u8_offset(&self, val: u8, offset: usize) {
+        for bit in 0..8 {
+            self.rectangle(
+                (7 - bit) as usize * self.info.width / 8,
+                self.info.height - 20 - offset,
+                (7 - bit + 1) as usize * self.info.width / 8,
+                self.info.height - offset,
+                if (val & (1 << bit) != 0) { 255 } else { 0 },
+                if (val & (1 << bit) != 0) { 255 } else { 0 },
+                if (val & (1 << bit) != 0) { 255 } else { 0 },
+            );
+            if bit != 0 {
+                self.rectangle(
+                    (7 - bit + 1) as usize * self.info.width / 8,
+                    self.info.height - 20 - offset,
+                    ( (7 - bit + 1) as usize * self.info.width / 8 ) + 2,
+                    self.info.height - offset,
+                    0, 255, 128
+                );
+            }
+        }
+    }
+    /// Shows a u8 in binary form along the bottom of the screen
+    /// Also shows an MSB to LSB indicator (white-to-black) for ease of use
+    pub fn show_u8(&self, val: u8) {
+        for bit in 0..8 {
+            // show MSB-LSB indicator, gradient rectangle
+            self.rectangle(
+                (7 - bit) as usize * self.info.width / 8,
+                self.info.height - 40,
+                (7 - bit + 1) as usize * self.info.width / 8,
+                self.info.height - 20,
+                ((bit + 1) * 10),
+                ((bit + 1) * 10),
+                ((bit + 1) * 10),
+            );
+        }
+        self.show_u8_offset(val, 0);
+    }
 }
 
 #[repr(packed)]
 pub struct Pixel {
     b: u8,
     g: u8,
-    r: u8
+    r: u8,
 }
 
-pub struct FrameBufferTwo {
-
-}
+pub struct FrameBufferTwo {}

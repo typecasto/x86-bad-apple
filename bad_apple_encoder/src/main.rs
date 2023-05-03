@@ -22,8 +22,8 @@ fn main() {
             if i % bypp != 0 {continue;}
             let mut this = this;
             let mut prev = prev;
-            if this <= &20  {this = &0;}
-            if prev <= &20  {prev = &0;}
+            if this <= &100  {this = &0;}
+            if prev <= &100  {prev = &0;}
             if this >= &200 {this = &255;}
             if prev >= &200 {prev = &255;}
             if this != prev {
@@ -34,9 +34,14 @@ fn main() {
                 //     "fb.putg({1},{2},{0});\n",
                 //     this, x, y
                 // );
-                dbg!(&i);
-                codes.extend((i as u16).to_le_bytes());
-                codes.push(this.clone());
+                // codes.extend((x as u16).to_le_bytes());
+                // codes.extend((y as u16).to_le_bytes());
+                // codes.push(this.clone());
+                codes.push(1);
+                codes.push(2);
+                codes.push(3);
+                codes.push(4);
+                codes.push(5);
                 diffs += 1;
                 difft += 1;
 
