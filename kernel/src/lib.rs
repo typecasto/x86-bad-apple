@@ -39,6 +39,10 @@ impl FrameBuffer {
             _ => unreachable!(),
         }
     }
+    #[inline]
+    pub fn putg(&self, x: usize, y: usize, g: u8) {
+        self.put(x, y, g, g, g);
+    }
     pub fn clear(&self) {
         for y in 0..self.info.height {
             for x in 0..self.info.width {

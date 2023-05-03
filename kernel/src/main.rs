@@ -28,7 +28,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     // first-fit memory allocation, no reason to use best-fit
     // allocate a region for a 2nd framebuffer to do double buffering
     // to avoid screen tearing
-    let mut fb2 = None;
+    // let mut fb2 = None;
     for region in mems.iter() {
         // If this region is big enough to fit a buffer and isn't used otherwise
         fb.rectangle(0, 0, fb.info.width, fb.info.height, 0, 20, 0); // for debugging
@@ -36,15 +36,14 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
         && matches!(region.kind, MemoryRegionKind::Usable) {
             fb.rectangle(0, 0, fb.info.width, fb.info.height, 0, 80, 0); // for debugging
             // give it to the framebuffer
-            unsafe { *(region.start as usize as *mut u8) = 2 };
-            fb2 = Some(FrameBuffer{data: region.start as *mut u8, info: fbinfo});
+            // unsafe { *(region.start as usize as *mut u8) = 2 };
+            // fb2 = Some(FrameBuffer{data: region.start as *mut u8, info: fbinfo});
             // break;
         }
         fb.rectangle(0, 0, fb.info.width, fb.info.height, 0, 0, 0); // for debugging
         // this is a terrible way to do memory allocation but this OS is just a toy
     }
     fb.rectangle(0, 0, fb.info.width, fb.info.height, 128, 0, 0); // for debugging
-    let fb2 = fb2.unwrap();
     
     fb.clear();
     for _ in 0..15 {
@@ -52,28 +51,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
         fb.rectangle(0, 0, fb.info.width, fb.info.height, 128, 0, 128);
     }
     fb.clear();
-    for _ in 0..15 {
-        unsafe { fb2.data.write(20) };
-        fb.rectangle(0, 0, fb.info.width, fb.info.height, 255, 0, 0); // for debugging
-        fb2.rectangle(0, 0, fb2.info.width, fb2.info.height, 255, 50, 128);
-        fb2.rectangle(0, 0, fb2.info.width, fb2.info.height, 128, 50, 128);
-        // unsafe { fb2.data.copy_to(fb.data, fbinfo.byte_len) };
-    }
-    fb.clear();
-    for _ in 0..30 {
-        for r in [255, 128] {
-            unsafe { fb.data.write_bytes(r, fb.info.byte_len) };
-        }
-    }
-    fb.clear();
-    for _ in 0..30 {
-        for r in [255, 128] {
-            for y in 0..(fb.info.height * fb.info.stride) {
-                for x in 0..fb.info.width {
-                }
-            }
-        }
-    }
+
     loop {}
 }
 
