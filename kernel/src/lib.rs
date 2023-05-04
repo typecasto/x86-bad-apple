@@ -132,7 +132,7 @@ impl FrameBuffer {
         let char_row = charindex / 32; // characters per row in profont src
         let char_col = charindex % 32;
         
-        PROFONT_18_POINT.into()[0];
+        PROFONT_18_POINT;
     }
 }
 
