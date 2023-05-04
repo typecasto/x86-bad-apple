@@ -30,18 +30,19 @@ fn main() {
             // if this.abs_diff(prev.clone()) > 15 {
                 let x = (i / bypp) % width as usize;
                 let y = (i / bypp) / width as usize;
-                // print!(
-                //     "fb.putg({1},{2},{0});\n",
-                //     this, x, y
-                // );
-                // codes.extend((x as u16).to_le_bytes());
-                // codes.extend((y as u16).to_le_bytes());
+                assert!(y <= 0xFFFF);
+                assert!(x <= 0xFFFF);
+                assert!(this <= &0xFF);
+                codes.push(1);
+                codes.push(2);
+                codes.push(3);
+                codes.push(4);
+                codes.push(5);
+                // codes.push((y>>8) as u8);
+                // codes.push(y as u8);
+                // codes.push((x>>8) as u8);
+                // codes.push(x as u8);
                 // codes.push(this.clone());
-                codes.push((y>>8) as u8);
-                codes.push(y as u8);
-                codes.push((x>>8) as u8);
-                codes.push(x as u8);
-                codes.push(this.clone());
                 diffs += 1;
                 difft += 1;
 

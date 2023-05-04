@@ -57,7 +57,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     // initialize the drive
     unsafe {
         // Select drive 1
-        drive_select.write(1 << 4);
+        drive_select.write((1 << 4) | (0 << 6));
         for v in 0..15 {
             // yeah just do it 15 times, sure
             let _ = status_commands.read();
@@ -77,13 +77,14 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     // Buffer type, essentially an untagged union
     // One underlying 512-byte buffer, two logical variables that share the same data
     union Buffer {
-        dbyte: [u16; 256],
+        word: [u16; 256],
         byte: [u8; 512],
     }
     let mut buffer: Buffer = unsafe { Buffer { byte: [0; 512] } };
     // LBA to read next
     let mut lba = 1u64;
     fb.clear();
+    let mut temp_counter = 0;
     loop {
         unsafe {
             // fb.show_u8_offset(status_commands.read(), 0);
@@ -92,17 +93,23 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
             sector_number.write(lba as u8); // low byte
             cyl_low.write((lba >> 8) as u8); // middle byte
             cyl_high.write((lba >> 16) as u8); // high byte
+            fb.show_u8_offset(lba as u8, 130);
+            // fb.show_u8_offset((lba >> 8) as u8, 20);
+            // fb.show_u8_offset((lba >> 16) as u8, 40);
             lba += 1;
-            fb.show_u8_offset(lba as u8, 40);
             status_commands.write(0x20); // send the READ_SECTORS command
-            // fb.show_u8_offset(status_commands.read(), 0);
-            // fb.show_u8_offset(errors_features.read(), 20);
+                                         // fb.show_u8_offset(status_commands.read(), 0);
+                                         // fb.show_u8_offset(errors_features.read(), 20);
 
             // fb.clear();
+            // for _ in 0..20{
             let mut polled = false;
             while polled == false {
                 //fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 255, 0, 128);
                 //fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 0, 128);
+                for _ in 0..15 {
+                    let status = status_commands.read();
+                }
                 let status = status_commands.read();
                 // fb.show_u8_offset(status, 0);
                 if status & 0x80 == 0 && status & 0x08 == 0x08 {
@@ -111,9 +118,16 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
                 }
                 // fb.show_u8_offset(errors_features.read(), 20);
             }
+
             // we're ready to read a sector into the buffer
-            for i in 0..=0xFF {
-                buffer.dbyte[i] = data_io.read();
+            for i in 0..256 {
+                buffer.word[i] = data_io.read();
+                // if i <= 30 {
+                // temp_counter+=1;
+                // fb.show_u8_offset(buffer.word[i] as u8, ((temp_counter) % 31) * 20);
+                // temp_counter+=1;
+                // fb.show_u8_offset((buffer.word[i] >> 8) as u8, ((temp_counter) % 31) * 20);
+                // }
             }
             buffer_pos = 0;
             // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 0, 128);
@@ -126,12 +140,20 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
                     let y = packet[1] as usize | ((packet[0] as usize) << 8);
                     let x = packet[3] as usize | ((packet[2] as usize) << 8);
                     let d = packet[4];
+                    // #[cfg(debug_assertions)]
+                    {
+                        // fb.show_u8_offset((y>>8) as u8, 0);
+                        // fb.show_u8_offset((y>>0) as u8, 20);
+                        // fb.show_u8_offset((x>>8) as u8, 50);
+                        // fb.show_u8_offset((x>>0) as u8, 70);
+                        // fb.show_u8_offset(d, 100);
+                    }
                     fb.put(x, y, d, d, d);
                     index = 0;
                 }
             }
+            // }
             // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 40, 128);
-            // loop {}
         }
     }
 

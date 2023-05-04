@@ -2,6 +2,7 @@
 #![allow(unused, dead_code)]
 
 use bootloader_api::info::{FrameBufferInfo, PixelFormat};
+use profont::PROFONT_18_POINT;
 
 mod rle;
 
@@ -123,6 +124,15 @@ impl FrameBuffer {
             );
         }
         self.show_u8_offset(val, 0);
+    }
+    // coordinates are pixel-wise, multiply x by 12 and y by 22 for character-wise
+    //
+    pub fn putchar(&self, x: usize, y: usize, val: char, r: u8, g: u8, b: u8) {
+        let charindex = PROFONT_18_POINT.glyph_mapping.index(val);
+        let char_row = charindex / 32; // characters per row in profont src
+        let char_col = charindex % 32;
+        
+        PROFONT_18_POINT.into()[0];
     }
 }
 
