@@ -20,7 +20,7 @@ impl FrameBuffer {
                 .add(self.info.bytes_per_pixel * ((y * self.info.stride) + x))
         };
     }
-    #[inline]
+    // #[inline]
     pub fn put(&self, x: usize, y: usize, r: u8, g: u8, b: u8) {
         match self.info.pixel_format {
             PixelFormat::Rgb => {

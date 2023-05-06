@@ -82,7 +82,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     }
     let mut buffer: Buffer = unsafe { Buffer { byte: [0; 512] } };
     // LBA to read next
-    let mut lba = 1u64;
+    let mut lba = 0b00111100u64; // start at sector 60 
     fb.clear();
     let mut temp_counter = 0;
     loop {
@@ -93,7 +93,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
             sector_number.write(lba as u8); // low byte
             cyl_low.write((lba >> 8) as u8); // middle byte
             cyl_high.write((lba >> 16) as u8); // high byte
-            fb.show_u8_offset(lba as u8, 130);
+            // fb.show_u8_offset(lba as u8, 130);
             // fb.show_u8_offset((lba >> 8) as u8, 20);
             // fb.show_u8_offset((lba >> 16) as u8, 40);
             lba += 1;
@@ -105,8 +105,8 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
             // for _ in 0..20{
             let mut polled = false;
             while polled == false {
-                //fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 255, 0, 128);
-                //fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 0, 128);
+                // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 255, 0, 128);
+                // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 0, 128);
                 for _ in 0..15 {
                     let status = status_commands.read();
                 }
@@ -122,13 +122,23 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
             // we're ready to read a sector into the buffer
             for i in 0..256 {
                 buffer.word[i] = data_io.read();
-                // if i <= 30 {
-                // temp_counter+=1;
-                // fb.show_u8_offset(buffer.word[i] as u8, ((temp_counter) % 31) * 20);
-                // temp_counter+=1;
-                // fb.show_u8_offset((buffer.word[i] >> 8) as u8, ((temp_counter) % 31) * 20);
-                // }
+                if i < 11 {
+                    fb.show_u8_offset(buffer.word[i] as u8, ((temp_counter) % 22) * 20);
+                    temp_counter += 1;
+                    fb.show_u8_offset((buffer.word[i] >> 8) as u8, ((temp_counter) % 22) * 20);
+                    temp_counter += 1;
+                }
             }
+            fb.show_u8_offset((buffer.word[255]) as u8, 32 * 20);
+            fb.show_u8_offset((buffer.word[255] >> 8) as u8, 33 * 20);
+            for x in 0u8..255 {
+                // fb.show_u8_offset(x, 35 * 20);
+                // fb.show_u8_offset(x, 35 * 20);
+                fb.show_u8_offset(x, 35 * 20);
+            }
+            fb.clear();
+
+            temp_counter = 0;
             buffer_pos = 0;
             // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 0, 128);
             for i in 0..=0x1FF {
@@ -148,7 +158,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
                         // fb.show_u8_offset((x>>0) as u8, 70);
                         // fb.show_u8_offset(d, 100);
                     }
-                    fb.put(x, y, d, d, d);
+                    // fb.put(x, y, d, d, d);
                     index = 0;
                 }
             }
