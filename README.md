@@ -2,7 +2,9 @@
 Bootable tohou meme. Project for operating systems SP2023.
 
 # Setup
-It needs a bit of one-time setup before running.
+You need to do a bit of one-time setup before running, to generate the video data and install
+tools that are required to run the OS.    
+This only needs to be done once.
 1. Make sure you have qemu-system-x86_64, ffmpeg, and rust installed.
 2. Run `rustup target add x86_64-unknown-none`.
 3. Run `rustup component add llvm-tools`.

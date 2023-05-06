@@ -32,22 +32,13 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     const IO_PORT: u16 = 0x1F0;
     const CTRL_PORT: u16 = 0x3F6;
 
-    let mut data_io: Port<u16> = Port::new(IO_PORT + 0); //1f0
-    let mut errors_features: Port<u8> = Port::new(IO_PORT + 1); //1f1
-    let mut sector_count: Port<u8> = Port::new(IO_PORT + 2); // 1f2
-    let mut sector_number: Port<u8> = Port::new(IO_PORT + 3); // 1f3
-    let mut cyl_low: Port<u8> = Port::new(IO_PORT + 4);// 1f4
-    let mut cyl_high: Port<u8> = Port::new(IO_PORT + 5); //1f5
-    let mut drive_select: Port<u8> = Port::new(IO_PORT + 6); //1f6
-    // 0 	ERR 	Indicates an error occurred. Send a new command to clear it (or nuke it with a Software Reset).
-    // 1 	IDX 	Index. Always set to zero.
-    // 2 	CORR 	Corrected data. Always set to zero.
-    // 3 	DRQ 	Set when the drive has PIO data to transfer, or is ready to accept PIO data.
-    // 4 	SRV 	Overlapped Mode Service Request.
-    // 5 	DF 	Drive Fault Error (does not set ERR).
-    // 6 	RDY 	Bit is clear when drive is spun down, or after an error. Set otherwise.
-    // 7 	BSY 	Indicates the drive is preparing to send/receive data (wait for it to clear). In case of 'hang' (it never clears), do a software reset.
-    // read = status ^, write = commands
+    let mut data_io: Port<u16> = Port::new(IO_PORT + 0);
+    let mut errors_features: Port<u8> = Port::new(IO_PORT + 1);
+    let mut sector_count: Port<u8> = Port::new(IO_PORT + 2);
+    let mut sector_number: Port<u8> = Port::new(IO_PORT + 3);
+    let mut cyl_low: Port<u8> = Port::new(IO_PORT + 4);
+    let mut cyl_high: Port<u8> = Port::new(IO_PORT + 5);
+    let mut drive_select: Port<u8> = Port::new(IO_PORT + 6);
     let mut status_commands: Port<u8> = Port::new(IO_PORT + 7);
 
     // write = device ctl, read = alt status
