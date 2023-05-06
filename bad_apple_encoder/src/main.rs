@@ -22,8 +22,8 @@ fn main() {
             if i % bypp != 0 {continue;}
             let mut this = this;
             let mut prev = prev;
-            if this <= &100  {this = &0;}
-            if prev <= &100  {prev = &0;}
+            if this <= &20  {this = &0;}
+            if prev <= &20  {prev = &0;}
             if this >= &200 {this = &255;}
             if prev >= &200 {prev = &255;}
             if this != prev {
@@ -33,16 +33,16 @@ fn main() {
                 assert!(y <= 0xFFFF);
                 assert!(x <= 0xFFFF);
                 assert!(this <= &0xFF);
-                codes.push(1);
-                codes.push(2);
-                codes.push(3);
-                codes.push(4);
-                codes.push(5);
-                // codes.push((y>>8) as u8);
-                // codes.push(y as u8);
-                // codes.push((x>>8) as u8);
-                // codes.push(x as u8);
-                // codes.push(this.clone());
+                // codes.push(1);
+                // codes.push(2);
+                // codes.push(3);
+                // codes.push(4);
+                // codes.push(5);
+                codes.push((y>>8) as u8);
+                codes.push(y as u8);
+                codes.push((x>>8) as u8);
+                codes.push(x as u8);
+                codes.push(this.clone());
                 diffs += 1;
                 difft += 1;
 

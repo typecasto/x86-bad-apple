@@ -32,13 +32,13 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     const IO_PORT: u16 = 0x1F0;
     const CTRL_PORT: u16 = 0x3F6;
 
-    let mut data_io: Port<u16> = Port::new(IO_PORT + 0);
-    let mut errors_features: Port<u8> = Port::new(IO_PORT + 1);
-    let mut sector_count: Port<u8> = Port::new(IO_PORT + 2);
-    let mut sector_number: Port<u8> = Port::new(IO_PORT + 3);
-    let mut cyl_low: Port<u8> = Port::new(IO_PORT + 4);
-    let mut cyl_high: Port<u8> = Port::new(IO_PORT + 5);
-    let mut drive_select: Port<u8> = Port::new(IO_PORT + 6);
+    let mut data_io: Port<u16> = Port::new(IO_PORT + 0); //1f0
+    let mut errors_features: Port<u8> = Port::new(IO_PORT + 1); //1f1
+    let mut sector_count: Port<u8> = Port::new(IO_PORT + 2); // 1f2
+    let mut sector_number: Port<u8> = Port::new(IO_PORT + 3); // 1f3
+    let mut cyl_low: Port<u8> = Port::new(IO_PORT + 4);// 1f4
+    let mut cyl_high: Port<u8> = Port::new(IO_PORT + 5); //1f5
+    let mut drive_select: Port<u8> = Port::new(IO_PORT + 6); //1f6
     // 0 	ERR 	Indicates an error occurred. Send a new command to clear it (or nuke it with a Software Reset).
     // 1 	IDX 	Index. Always set to zero.
     // 2 	CORR 	Corrected data. Always set to zero.
@@ -57,7 +57,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     // initialize the drive
     unsafe {
         // Select drive 1
-        drive_select.write((1 << 4) | (0 << 6));
+        drive_select.write((1 << 4) | (1 << 6));
         for v in 0..15 {
             // yeah just do it 15 times, sure
             let _ = status_commands.read();
@@ -82,7 +82,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     }
     let mut buffer: Buffer = unsafe { Buffer { byte: [0; 512] } };
     // LBA to read next
-    let mut lba = 0b00111100u64; // start at sector 60 
+    let mut lba = 0u64;
     fb.clear();
     let mut temp_counter = 0;
     loop {
@@ -103,8 +103,8 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
 
             // fb.clear();
             // for _ in 0..20{
-            let mut polled = false;
-            while polled == false {
+            let mut ready = false;
+            while ready == false {
                 // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 255, 0, 128);
                 // fb.rectangle(0, 0, fb.info.width, fb.info.height - 40, 128, 0, 128);
                 for _ in 0..15 {
@@ -114,7 +114,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
                 // fb.show_u8_offset(status, 0);
                 if status & 0x80 == 0 && status & 0x08 == 0x08 {
                     // BSY = 0, and DRQ = 1
-                    polled = true;
+                    ready = true;
                 }
                 // fb.show_u8_offset(errors_features.read(), 20);
             }
@@ -122,21 +122,21 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
             // we're ready to read a sector into the buffer
             for i in 0..256 {
                 buffer.word[i] = data_io.read();
-                if i < 11 {
-                    fb.show_u8_offset(buffer.word[i] as u8, ((temp_counter) % 22) * 20);
-                    temp_counter += 1;
-                    fb.show_u8_offset((buffer.word[i] >> 8) as u8, ((temp_counter) % 22) * 20);
-                    temp_counter += 1;
-                }
+                // if i < 11 {
+                //     fb.show_u8_offset(buffer.word[i] as u8, ((temp_counter) % 22) * 20);
+                //     temp_counter += 1;
+                //     fb.show_u8_offset((buffer.word[i] >> 8) as u8, ((temp_counter) % 22) * 20);
+                //     temp_counter += 1;
+                // }
             }
-            fb.show_u8_offset((buffer.word[255]) as u8, 32 * 20);
-            fb.show_u8_offset((buffer.word[255] >> 8) as u8, 33 * 20);
-            for x in 0u8..255 {
+            // fb.show_u8_offset((buffer.word[255]) as u8, 32 * 20);
+            // fb.show_u8_offset((buffer.word[255] >> 8) as u8, 33 * 20);
+            // for x in 0u8..255 {
                 // fb.show_u8_offset(x, 35 * 20);
                 // fb.show_u8_offset(x, 35 * 20);
-                fb.show_u8_offset(x, 35 * 20);
-            }
-            fb.clear();
+                // fb.show_u8_offset(x, 35 * 20);
+            // }
+            // fb.clear();
 
             temp_counter = 0;
             buffer_pos = 0;
@@ -158,7 +158,7 @@ fn kernel_main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
                         // fb.show_u8_offset((x>>0) as u8, 70);
                         // fb.show_u8_offset(d, 100);
                     }
-                    // fb.put(x, y, d, d, d);
+                    fb.put(x, y, d, d, d);
                     index = 0;
                 }
             }
