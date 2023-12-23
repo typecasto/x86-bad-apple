@@ -1,4 +1,4 @@
-# useless-os
+# x86-bad-apple
 Bootable tohou meme. Project for operating systems SP2023.
 
 # Setup
