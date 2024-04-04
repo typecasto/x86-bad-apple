@@ -1,5 +1,5 @@
 # x86-bad-apple
-Bootable tohou meme. Project for operating systems SP2023.
+Bootable touhou meme. Project for operating systems SP2023.
 
 # Setup
 You need to do a bit of one-time setup before running, to generate the video data and install
